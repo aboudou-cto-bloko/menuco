@@ -54,7 +54,11 @@ export async function createRestaurant(_: State, formData: FormData): Promise<St
   const passwordHash = await hashPassword(ownerPassword);
 
   const owner = await prisma.user.create({
-    data: { email: ownerEmail, passwordHash, role: "OWNER" },
+    data: { email: ownerEmail, name: rest.name, emailVerified: false, role: "OWNER" },
+  });
+
+  await prisma.account.create({
+    data: { accountId: owner.id, providerId: "credential", userId: owner.id, password: passwordHash },
   });
 
   const restaurant = await prisma.restaurant.create({
