@@ -5,6 +5,7 @@ import { Loader2, Check, X, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { PalettePicker } from "@/components/ui/palette-picker";
+import { FontPicker } from "@/components/ui/font-picker";
 import { useUploadThing } from "@/lib/uploadthing-client";
 import { updateOwnerAppearance } from "@/app/actions/owner";
 
@@ -55,21 +56,23 @@ function ImageInput({
 
 interface Props {
   initialPalette: string;
+  initialFont: string;
   initialLogo: string | null;
   initialCover: string | null;
 }
 
-export function OwnerAppearance({ initialPalette, initialLogo, initialCover }: Props) {
+export function OwnerAppearance({ initialPalette, initialFont, initialLogo, initialCover }: Props) {
   const [isPending, startTransition] = useTransition();
   const [saved, setSaved] = useState(false);
 
   const [palette, setPalette] = useState(initialPalette);
+  const [fontChoice, setFontChoice] = useState(initialFont);
   const [logo, setLogo] = useState<string | null>(initialLogo);
   const [cover, setCover] = useState<string | null>(initialCover);
 
   function save() {
     startTransition(async () => {
-      await updateOwnerAppearance({ themePalette: palette, logo, cover });
+      await updateOwnerAppearance({ themePalette: palette, fontChoice, logo, cover });
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
     });
@@ -84,6 +87,10 @@ export function OwnerAppearance({ initialPalette, initialLogo, initialCover }: P
       <div className="space-y-2">
         <Label className="text-xs">Palette de couleurs</Label>
         <PalettePicker value={palette} onChange={setPalette} />
+      </div>
+      <div className="space-y-2">
+        <Label className="text-xs">Police du menu</Label>
+        <FontPicker value={fontChoice} onChange={setFontChoice} />
       </div>
       <Button size="sm" onClick={save} disabled={isPending} className="gap-2 w-full">
         {isPending ? <Loader2 size={13} className="animate-spin" /> : saved ? <Check size={13} /> : null}

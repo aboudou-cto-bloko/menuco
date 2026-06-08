@@ -129,6 +129,7 @@ export default async function OwnerDashboard() {
           </CardHeader>
           <OwnerAppearance
             initialPalette={restaurant.themePalette ?? "braise"}
+            initialFont={restaurant.fontChoice ?? "inter"}
             initialLogo={restaurant.logo ?? null}
             initialCover={restaurant.cover ?? null}
           />

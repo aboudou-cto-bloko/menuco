@@ -5,6 +5,7 @@ import { MessageCircle, Phone, Star, MapPin, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ItemDetailSheet } from "./item-detail-sheet";
 import { getPalette, bgAlpha } from "@/lib/palettes";
+import { getFont } from "@/lib/fonts";
 import type { Restaurant, Menu, Category, MenuItem, ItemVariant } from "@/generated/prisma/client";
 
 type FullItem = MenuItem & { variants: ItemVariant[] };
@@ -18,9 +19,10 @@ export function TemplateMagazine({ restaurant, menu }: Props) {
   const [selectedItem, setSelectedItem] = useState<FullItem | null>(null);
   const p = getPalette(restaurant.themePalette);
   const accent = p.accent;
+  const fontFamily = getFont(restaurant.fontChoice).family;
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: p.bg, color: p.text }}>
+    <div className="min-h-screen" style={{ backgroundColor: p.bg, color: p.text, fontFamily }}>
       {/* Hero cover */}
       <div className="relative h-[55vh] min-h-[320px] overflow-hidden">
         {restaurant.cover ? (

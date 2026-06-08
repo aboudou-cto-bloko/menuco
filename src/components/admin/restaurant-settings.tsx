@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { PalettePicker } from "@/components/ui/palette-picker";
+import { FontPicker } from "@/components/ui/font-picker";
 import { updateRestaurant } from "@/app/actions/restaurants";
 import { TemplatePicker } from "./template-picker";
 import { useUploadThing } from "@/lib/uploadthing-client";
@@ -73,6 +74,7 @@ export function RestaurantSettings({ restaurant }: { restaurant: Restaurant }) {
   const [customDomain, setCustomDomain] = useState(restaurant.customDomain ?? "");
   const [template, setTemplate] = useState(restaurant.template);
   const [themePalette, setThemePalette] = useState(restaurant.themePalette ?? "braise");
+  const [fontChoice, setFontChoice] = useState(restaurant.fontChoice ?? "inter");
   const [logo, setLogo] = useState<string | null>(restaurant.logo ?? null);
   const [cover, setCover] = useState<string | null>(restaurant.cover ?? null);
   const [active, setActive] = useState(restaurant.active);
@@ -84,6 +86,7 @@ export function RestaurantSettings({ restaurant }: { restaurant: Restaurant }) {
         name,
         template: template as "CLASSIQUE" | "CARDS" | "MAGAZINE",
         themePalette,
+        fontChoice,
         logo,
         cover,
         active,
@@ -136,6 +139,10 @@ export function RestaurantSettings({ restaurant }: { restaurant: Restaurant }) {
         <div className="space-y-2">
           <Label>Palette de couleurs</Label>
           <PalettePicker value={themePalette} onChange={setThemePalette} />
+        </div>
+        <div className="space-y-2">
+          <Label>Police du menu public</Label>
+          <FontPicker value={fontChoice} onChange={setFontChoice} />
         </div>
       </div>
 

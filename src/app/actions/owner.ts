@@ -7,6 +7,7 @@ import { auth } from "@/lib/auth";
 
 export async function updateOwnerAppearance(data: {
   themePalette?: string;
+  fontChoice?: string;
   logo?: string | null;
   cover?: string | null;
 }) {
@@ -20,6 +21,7 @@ export async function updateOwnerAppearance(data: {
     where: { id: restaurant.id },
     data: {
       ...(data.themePalette !== undefined && { themePalette: data.themePalette }),
+      ...(data.fontChoice !== undefined && { fontChoice: data.fontChoice }),
       ...(data.logo !== undefined && { logo: data.logo }),
       ...(data.cover !== undefined && { cover: data.cover }),
     },

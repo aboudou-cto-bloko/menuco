@@ -4,6 +4,7 @@ import { useState } from "react";
 import { X, MessageCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getPalette, bgAlpha } from "@/lib/palettes";
+import { getFont } from "@/lib/fonts";
 import type { Restaurant, Menu, Category, MenuItem, ItemVariant } from "@/generated/prisma/client";
 
 type FullItem = MenuItem & { variants: ItemVariant[] };
@@ -17,11 +18,12 @@ export function TemplateCards({ restaurant, menu }: Props) {
   const [selected, setSelected] = useState<FullItem | null>(null);
   const p = getPalette(restaurant.themePalette);
   const accent = p.accent;
+  const fontFamily = getFont(restaurant.fontChoice).family;
 
   const activeItems = menu.categories.find(c => c.id === activeCat)?.items.filter(i => i.available) ?? [];
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: p.bg, color: p.text }}>
+    <div className="min-h-screen" style={{ backgroundColor: p.bg, color: p.text, fontFamily }}>
       {/* Header */}
       <header className="sticky top-0 z-30 backdrop-blur-md"
         style={{ backgroundColor: bgAlpha(p.bg, 0.92) }}>
