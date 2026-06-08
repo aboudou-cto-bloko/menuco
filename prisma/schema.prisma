@@ -54,17 +54,20 @@ enum Template {
   MAGAZINE
 }
 
-// ─── Auth ─────────────────────────────────────────────────────────────────────
+// ─── Auth (Better Auth compatible) ───────────────────────────────────────────
 
 model User {
-  id           String      @id @default(cuid())
-  email        String      @unique
-  passwordHash String
-  role         Role        @default(OWNER)
-  restaurant   Restaurant?
-  sessions     Session[]
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
+  id            String      @id @default(cuid())
+  name          String      @default("")
+  email         String      @unique
+  emailVerified Boolean     @default(false)
+  image         String?
+  role          Role        @default(OWNER)
+  restaurant    Restaurant?
+  sessions      Session[]
+  accounts      Account[]
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
 }
 
 model Session {
@@ -73,7 +76,36 @@ model Session {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   token     String   @unique
   expiresAt DateTime
+  ipAddress String?
+  userAgent String?
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Account {
+  id                    String    @id @default(cuid())
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+}
+
+model Verification {
+  id         String    @id @default(cuid())
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
 }
 
 // ─── Restaurant ───────────────────────────────────────────────────────────────

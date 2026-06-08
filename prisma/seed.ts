@@ -11,17 +11,33 @@ async function main() {
   const adminPassword = process.env.ADMIN_PASSWORD ?? "admin_change_me_2024!";
 
   const existing = await prisma.user.findUnique({ where: { email: adminEmail } });
+
+  let userId: string;
+
   if (existing) {
-    console.log(`Admin already exists: ${adminEmail}`);
-    return;
+    console.log(`User exists: ${adminEmail} — mise à jour du mot de passe`);
+    userId = existing.id;
+    // Update password in Account
+    await prisma.account.deleteMany({ where: { userId, providerId: "credential" } });
+  } else {
+    const user = await prisma.user.create({
+      data: { email: adminEmail, name: "François Zinsou", role: "ADMIN", emailVerified: true },
+    });
+    userId = user.id;
   }
 
+  // Create Better Auth credential account
   const passwordHash = await hashPassword(adminPassword);
-  await prisma.user.create({
-    data: { email: adminEmail, passwordHash, role: "ADMIN" },
+  await prisma.account.create({
+    data: {
+      accountId: userId,
+      providerId: "credential",
+      userId,
+      password: passwordHash,
+    },
   });
 
-  console.log(`✓ Admin created: ${adminEmail}`);
+  console.log(`✓ Admin prêt: ${adminEmail}`);
 }
 
 main()
