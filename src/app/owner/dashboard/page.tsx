@@ -2,13 +2,14 @@ import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { QrCode, Eye, EyeOff, LogOut, ExternalLink, MessageCircle, Star } from "lucide-react";
+import { QrCode, ExternalLink, MessageCircle, Star, Palette } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { OwnerMenuToggles } from "@/components/owner/menu-toggles";
 import { OwnerQrDownload } from "@/components/owner/qr-download";
 import { OwnerSignOut } from "@/components/owner/sign-out";
+import { OwnerAppearance } from "@/components/owner/appearance";
 
 async function getOwnerRestaurant(userId: string) {
   return prisma.restaurant.findUnique({
@@ -117,6 +118,21 @@ export default async function OwnerDashboard() {
             </CardContent>
           </Card>
         )}
+
+        {/* Apparence */}
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm flex items-center gap-2">
+              <Palette size={15} />Apparence du menu
+            </CardTitle>
+            <p className="text-xs text-muted-foreground">Logo, bannière et palette de couleurs.</p>
+          </CardHeader>
+          <OwnerAppearance
+            initialPalette={restaurant.themePalette ?? "braise"}
+            initialLogo={restaurant.logo ?? null}
+            initialCover={restaurant.cover ?? null}
+          />
+        </Card>
 
         {/* Contact links */}
         <Card>

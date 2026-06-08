@@ -1,15 +1,69 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Loader2, Check } from "lucide-react";
+import { Loader2, Check, X, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
+import { PalettePicker } from "@/components/ui/palette-picker";
 import { updateRestaurant } from "@/app/actions/restaurants";
 import { TemplatePicker } from "./template-picker";
+import { useUploadThing } from "@/lib/uploadthing-client";
 import type { Restaurant } from "@/generated/prisma/client";
+
+function ImageUpload({
+  label, current, endpoint, onUploaded, onRemove, aspect,
+}: {
+  label: string;
+  current: string | null | undefined;
+  endpoint: "restaurantLogo" | "restaurantCover";
+  onUploaded: (url: string) => void;
+  onRemove: () => void;
+  aspect: string;
+}) {
+  const [uploading, setUploading] = useState(false);
+  const { startUpload } = useUploadThing(endpoint, {
+    onClientUploadComplete: (res) => { onUploaded(res[0].url); setUploading(false); },
+    onUploadError: () => setUploading(false),
+  });
+
+  return (
+    <div className="space-y-2">
+      <Label>{label}</Label>
+      {current ? (
+        <div className="relative group w-full max-w-xs">
+          <div className={`${aspect} w-full rounded-xl overflow-hidden bg-muted`}>
+            <img src={current} alt="" className="w-full h-full object-cover" />
+          </div>
+          <button onClick={onRemove}
+            className="absolute top-2 right-2 w-6 h-6 rounded-full bg-background/80 backdrop-blur flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+            <X size={11} />
+          </button>
+        </div>
+      ) : (
+        <label className={`relative flex flex-col items-center justify-center w-full max-w-xs ${aspect} rounded-xl border-2 border-dashed border-border cursor-pointer hover:border-primary/50 transition-colors bg-muted/30`}>
+          <input type="file" accept="image/*" className="sr-only"
+            onChange={async (e) => {
+              const file = e.target.files?.[0];
+              if (!file) return;
+              setUploading(true);
+              await startUpload([file]);
+            }} />
+          {uploading ? (
+            <Loader2 size={20} className="animate-spin text-muted-foreground" />
+          ) : (
+            <>
+              <Upload size={18} className="text-muted-foreground mb-1" />
+              <span className="text-xs text-muted-foreground">Cliquer pour uploader</span>
+            </>
+          )}
+        </label>
+      )}
+    </div>
+  );
+}
 
 export function RestaurantSettings({ restaurant }: { restaurant: Restaurant }) {
   const [isPending, startTransition] = useTransition();
@@ -18,15 +72,21 @@ export function RestaurantSettings({ restaurant }: { restaurant: Restaurant }) {
   const [name, setName] = useState(restaurant.name);
   const [customDomain, setCustomDomain] = useState(restaurant.customDomain ?? "");
   const [template, setTemplate] = useState(restaurant.template);
-  const [accentColor, setAccentColor] = useState(restaurant.accentColor ?? "#f97316");
+  const [themePalette, setThemePalette] = useState(restaurant.themePalette ?? "braise");
+  const [logo, setLogo] = useState<string | null>(restaurant.logo ?? null);
+  const [cover, setCover] = useState<string | null>(restaurant.cover ?? null);
   const [active, setActive] = useState(restaurant.active);
 
   function save() {
     startTransition(async () => {
       await updateRestaurant({
         id: restaurant.id,
-        name, template: template as "CLASSIQUE" | "CARDS" | "MAGAZINE",
-        accentColor, active,
+        name,
+        template: template as "CLASSIQUE" | "CARDS" | "MAGAZINE",
+        themePalette,
+        logo,
+        cover,
+        active,
         customDomain: customDomain || undefined,
       });
       setSaved(true);
@@ -36,6 +96,7 @@ export function RestaurantSettings({ restaurant }: { restaurant: Restaurant }) {
 
   return (
     <div className="max-w-lg space-y-6">
+      {/* Général */}
       <div className="space-y-4">
         <h3 className="text-sm font-medium">Informations générales</h3>
         <div className="space-y-1.5">
@@ -54,25 +115,33 @@ export function RestaurantSettings({ restaurant }: { restaurant: Restaurant }) {
 
       <Separator />
 
+      {/* Photos */}
+      <div className="space-y-4">
+        <h3 className="text-sm font-medium">Photos</h3>
+        <ImageUpload label="Logo / Photo de profil" current={logo} endpoint="restaurantLogo"
+          onUploaded={setLogo} onRemove={() => setLogo(null)} aspect="aspect-square max-h-24 !w-24" />
+        <ImageUpload label="Bannière (cover)" current={cover} endpoint="restaurantCover"
+          onUploaded={setCover} onRemove={() => setCover(null)} aspect="aspect-[3/1]" />
+      </div>
+
+      <Separator />
+
+      {/* Apparence */}
       <div className="space-y-4">
         <h3 className="text-sm font-medium">Apparence</h3>
         <div className="space-y-1.5">
           <Label>Template</Label>
           <TemplatePicker value={template as "CLASSIQUE" | "CARDS" | "MAGAZINE"} onChange={(v) => setTemplate(v)} />
         </div>
-        <div className="space-y-1.5">
-          <Label>Couleur accent</Label>
-          <div className="flex items-center gap-3">
-            <input type="color" value={accentColor} onChange={(e) => setAccentColor(e.target.value)}
-              className="w-10 h-10 rounded cursor-pointer border border-border bg-transparent p-0.5" />
-            <Input value={accentColor} onChange={(e) => setAccentColor(e.target.value)}
-              className="font-mono text-sm w-32" />
-          </div>
+        <div className="space-y-2">
+          <Label>Palette de couleurs</Label>
+          <PalettePicker value={themePalette} onChange={setThemePalette} />
         </div>
       </div>
 
       <Separator />
 
+      {/* Statut */}
       <div className="flex items-center justify-between">
         <div>
           <Label>Menu actif</Label>

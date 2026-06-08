@@ -127,6 +127,7 @@ model Restaurant {
   template      Template @default(CLASSIQUE)
   accentColor   String   @default("#f97316")
   fontChoice    String   @default("inter")
+  themePalette  String   @default("braise")
   priceFormat   String   @default("XOF")
   active        Boolean  @default(true)
   ownerId       String   @unique

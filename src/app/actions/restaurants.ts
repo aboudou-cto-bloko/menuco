@@ -101,6 +101,7 @@ const UpdateRestaurantSchema = z.object({
   cover: z.string().url().optional().nullable(),
   template: z.enum(["CLASSIQUE", "CARDS", "MAGAZINE"]).optional(),
   accentColor: z.string().optional(),
+  themePalette: z.string().optional(),
   fontChoice: z.string().optional(),
   active: z.coerce.boolean().optional(),
   hours: z.unknown().optional(),

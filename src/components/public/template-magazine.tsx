@@ -4,6 +4,7 @@ import { useState } from "react";
 import { MessageCircle, Phone, Star, MapPin, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ItemDetailSheet } from "./item-detail-sheet";
+import { getPalette, bgAlpha } from "@/lib/palettes";
 import type { Restaurant, Menu, Category, MenuItem, ItemVariant } from "@/generated/prisma/client";
 
 type FullItem = MenuItem & { variants: ItemVariant[] };
@@ -15,17 +16,18 @@ interface Props { restaurant: Restaurant; menu: FullMenu; }
 export function TemplateMagazine({ restaurant, menu }: Props) {
   const [expanded, setExpanded] = useState<string | null>(menu.categories[0]?.id ?? null);
   const [selectedItem, setSelectedItem] = useState<FullItem | null>(null);
-  const accent = restaurant.accentColor ?? "#f97316";
+  const p = getPalette(restaurant.themePalette);
+  const accent = p.accent;
 
   return (
-    <div className="min-h-screen bg-[#faf8f5] text-[#1a1008]">
+    <div className="min-h-screen" style={{ backgroundColor: p.bg, color: p.text }}>
       {/* Hero cover */}
       <div className="relative h-[55vh] min-h-[320px] overflow-hidden">
         {restaurant.cover ? (
           <img src={restaurant.cover} alt="" className="w-full h-full object-cover" />
         ) : (
           <div className="w-full h-full flex items-center justify-center"
-            style={{ background: `linear-gradient(135deg, ${accent}33, #0f0705)` }}>
+            style={{ background: `linear-gradient(135deg, ${accent}44, ${p.bg})` }}>
             <span className="text-6xl opacity-30">🍽️</span>
           </div>
         )}
@@ -50,16 +52,16 @@ export function TemplateMagazine({ restaurant, menu }: Props) {
         </div>
       </div>
 
-      {/* Contact bar */}
+      {/* Sticky contact bar */}
       <div className="sticky top-0 z-20 border-b"
-        style={{ backgroundColor: "rgba(250,248,245,0.95)", backdropFilter: "blur(8px)", borderColor: "#e5ddd5" }}>
+        style={{ backgroundColor: bgAlpha(p.bg, 0.95), backdropFilter: "blur(8px)", borderColor: p.border }}>
         <div className="max-w-2xl mx-auto px-4 py-2.5 flex items-center justify-between gap-3">
           <p className="text-xs font-serif font-semibold truncate opacity-60">{restaurant.name}</p>
           <div className="flex items-center gap-2">
             {restaurant.phone && (
               <a href={`tel:${restaurant.phone}`}
                 className="text-xs px-3 py-1.5 rounded-full border font-medium"
-                style={{ borderColor: "#d1c4b8" }}>
+                style={{ borderColor: p.border, color: p.text }}>
                 <Phone size={10} className="inline mr-1" />{restaurant.phone}
               </a>
             )}
@@ -77,29 +79,30 @@ export function TemplateMagazine({ restaurant, menu }: Props) {
       {/* Menu sections */}
       <main className="max-w-2xl mx-auto px-4 py-8 space-y-1">
         {menu.categories.map(cat => (
-          <div key={cat.id} className="border rounded-xl overflow-hidden" style={{ borderColor: "#e5ddd5" }}>
+          <div key={cat.id} className="border rounded-xl overflow-hidden"
+            style={{ borderColor: p.border, backgroundColor: p.surface }}>
             <button
               className="w-full flex items-center justify-between px-5 py-4 text-left"
               onClick={() => setExpanded(expanded === cat.id ? null : cat.id)}>
               <div className="flex items-center gap-2.5">
                 {cat.emoji && <span className="text-xl">{cat.emoji}</span>}
                 <div>
-                  <h2 className="text-base font-serif font-semibold">{cat.name}</h2>
-                  <p className="text-[11px] opacity-40">{cat.items.filter(i => i.available).length} plats</p>
+                  <h2 className="text-base font-serif font-semibold" style={{ color: p.text }}>{cat.name}</h2>
+                  <p className="text-[11px]" style={{ color: p.muted }}>{cat.items.filter(i => i.available).length} plats</p>
                 </div>
               </div>
-              <ChevronDown size={16} className={cn("opacity-40 transition-transform", expanded === cat.id && "rotate-180")} />
+              <ChevronDown size={16} className={cn("transition-transform", expanded === cat.id && "rotate-180")}
+                style={{ color: p.muted }} />
             </button>
 
             {expanded === cat.id && (
-              <div className="border-t" style={{ borderColor: "#e5ddd5" }}>
+              <div className="border-t" style={{ borderColor: p.border }}>
                 {cat.items.filter(i => i.available).map((item, idx) => (
                   <button key={item.id} onClick={() => setSelectedItem(item)}
-                    className={cn(
-                      "w-full text-left flex items-start gap-4 px-5 py-4 transition-colors hover:bg-[#f5efe8] active:scale-[0.99]",
-                      idx > 0 && "border-t"
-                    )}
-                    style={{ borderColor: "#f0ebe4" }}>
+                    className={cn("w-full text-left flex items-start gap-4 px-5 py-4 transition-colors active:scale-[0.99]", idx > 0 && "border-t")}
+                    style={{ borderColor: p.border }}
+                    onMouseEnter={e => (e.currentTarget.style.backgroundColor = bgAlpha(p.bg, 0.5))}
+                    onMouseLeave={e => (e.currentTarget.style.backgroundColor = "")}>
                     {item.imageUrl && (
                       <img src={item.imageUrl} alt={item.name}
                         className="w-20 h-20 rounded-lg object-cover shrink-0" />
@@ -108,25 +111,25 @@ export function TemplateMagazine({ restaurant, menu }: Props) {
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0">
                           <div className="flex items-center gap-1.5">
-                            <h3 className="text-sm font-medium leading-snug">{item.name}</h3>
+                            <h3 className="text-sm font-medium leading-snug" style={{ color: p.text }}>{item.name}</h3>
                             {item.isNew && (
                               <span className="text-[9px] px-1.5 py-0.5 rounded-full font-bold shrink-0"
-                                style={{ backgroundColor: accent, color: "#fff" }}>NEW</span>
+                                style={{ backgroundColor: accent, color: p.accentFg }}>NEW</span>
                             )}
                           </div>
                           {item.description && (
-                            <p className="text-xs opacity-50 mt-1 leading-relaxed line-clamp-2">{item.description}</p>
+                            <p className="text-xs mt-1 leading-relaxed line-clamp-2" style={{ color: p.muted }}>{item.description}</p>
                           )}
                         </div>
                         <p className="text-sm font-bold tabular-nums shrink-0" style={{ color: accent }}>
-                          {item.price.toLocaleString()} <span className="text-[10px] font-normal opacity-60">XOF</span>
+                          {item.price.toLocaleString()} <span className="text-[10px] font-normal" style={{ color: p.muted }}>XOF</span>
                         </p>
                       </div>
                       {item.variants.length > 0 && (
                         <div className="mt-2 flex flex-wrap gap-1.5">
                           {item.variants.map(v => (
                             <span key={v.id} className="text-[10px] px-2 py-1 rounded-md"
-                              style={{ backgroundColor: "#f0ebe4" }}>
+                              style={{ backgroundColor: bgAlpha(p.bg, 0.8), color: p.muted }}>
                               {v.name} — {v.price.toLocaleString()} XOF
                             </span>
                           ))}
@@ -136,7 +139,7 @@ export function TemplateMagazine({ restaurant, menu }: Props) {
                   </button>
                 ))}
                 {cat.items.filter(i => i.available).length === 0 && (
-                  <div className="px-5 py-6 text-center text-xs opacity-30">Aucun plat disponible</div>
+                  <div className="px-5 py-6 text-center text-xs" style={{ color: p.muted }}>Aucun plat disponible</div>
                 )}
               </div>
             )}
@@ -145,21 +148,22 @@ export function TemplateMagazine({ restaurant, menu }: Props) {
       </main>
 
       {/* Footer */}
-      <footer className="border-t mt-8 py-8 px-4" style={{ borderColor: "#e5ddd5", backgroundColor: "#f5f0ea" }}>
+      <footer className="border-t mt-8 py-8 px-4"
+        style={{ borderColor: p.border, backgroundColor: bgAlpha(p.surface, 0.8) }}>
         <div className="max-w-2xl mx-auto space-y-4 text-center">
           {restaurant.address && (
-            <p className="text-xs opacity-50 flex items-center justify-center gap-1">
+            <p className="text-xs flex items-center justify-center gap-1" style={{ color: p.muted }}>
               <MapPin size={10} />{restaurant.address}
             </p>
           )}
           <div className="flex items-center justify-center gap-3 flex-wrap">
             {restaurant.phone && (
-              <a href={`tel:${restaurant.phone}`} className="text-xs underline opacity-50">{restaurant.phone}</a>
+              <a href={`tel:${restaurant.phone}`} className="text-xs underline" style={{ color: p.muted }}>{restaurant.phone}</a>
             )}
             {restaurant.googlePlaceId && (
               <a href={`https://search.google.com/local/writereview?placeid=${restaurant.googlePlaceId}`}
                 target="_blank"
-                className="flex items-center gap-1 text-xs font-medium opacity-60">
+                className="flex items-center gap-1 text-xs font-medium" style={{ color: p.muted }}>
                 <Star size={11} />Laisser un avis Google
               </a>
             )}
@@ -177,14 +181,13 @@ export function TemplateMagazine({ restaurant, menu }: Props) {
         </a>
       )}
 
-      {/* Item detail bottom sheet */}
       <ItemDetailSheet
         item={selectedItem}
         onClose={() => setSelectedItem(null)}
         accent={accent}
         whatsapp={restaurant.whatsapp}
         restaurantName={restaurant.name}
-        theme="light"
+        theme={p.dark ? "dark" : "light"}
       />
     </div>
   );
