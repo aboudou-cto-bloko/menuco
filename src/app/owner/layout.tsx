@@ -2,9 +2,9 @@ import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
 
-export default async function RootPage() {
+export default async function OwnerLayout({ children }: { children: React.ReactNode }) {
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session) redirect("/login");
-  if (session.user.role === "OWNER") redirect("/owner/dashboard");
-  redirect("/dashboard");
+  if (session.user.role === "ADMIN") redirect("/dashboard");
+  return <>{children}</>;
 }
