@@ -7,7 +7,7 @@
     "build": "next build --webpack",
     "start": "next start",
     "db:migrate": "prisma migrate dev --config prisma/config.ts",
-    "db:seed": "tsx prisma/seed.ts",
+    "db:seed": "tsx --env-file=.env prisma/seed.ts",
     "db:push": "prisma db push --config prisma/config.ts"
   },
   "prisma": {
